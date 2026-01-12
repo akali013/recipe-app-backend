@@ -6,7 +6,8 @@ namespace recipe_app_backend.Services
     public interface IRecipeService
     {
         public List<Recipe> GetAllRecipes();
-        public RecipeResponse GetRecipeById(string id);
+        public RecipeDTO GetRecipeById(string id);
+        public Recipe CreateRecipe(RecipeDTO recipe);
     }
 
     public class RecipeService : IRecipeService
@@ -22,7 +23,7 @@ namespace recipe_app_backend.Services
             return _context.Recipes.ToList();
         }
 
-        public RecipeResponse GetRecipeById(string id)
+        public RecipeDTO GetRecipeById(string id)
         {
             Recipe? recipe = _context.Recipes.SingleOrDefault(recipe => recipe.Id == id);
             
@@ -37,7 +38,31 @@ namespace recipe_app_backend.Services
                 recipe.Source = "https://www.themealdb.com/meal/" + recipe.Id;
             }
 
-            return new RecipeResponse(recipe);
+            return new RecipeDTO(recipe);
+        }
+
+        public Recipe CreateRecipe(RecipeDTO dto)
+        {
+            AppendPeriods(dto.Instructions);
+            Recipe recipe = new Recipe(dto);
+
+            _context.Recipes.Add(recipe);
+            _context.SaveChanges();
+
+            return recipe;
+        }
+
+
+        // Add periods to the end of each instruction if the user did not include periods.
+        private void AppendPeriods(string[] instructions)
+        {
+            for (int i = 0; i < instructions.Length; i++)
+            {
+                if (!instructions[i].EndsWith("."))
+                {
+                    instructions[i] += ".";
+                }
+            }
         }
     }
 }

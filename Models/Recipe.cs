@@ -16,5 +16,28 @@ namespace recipe_app_backend.Models
         public string Instructions { get; set; }
         public string? Source { get; set; }
         public string? ImageUrl { get; set; }
+
+        public Recipe()
+        {
+            Id = Guid.NewGuid().ToString();
+            Name = "";
+            Type = "";
+            Ingredients = "";
+            Instructions = "";
+            Source = "";
+            ImageUrl = "";
+        }
+
+        public Recipe(RecipeDTO dto)
+        {
+            Id = Guid.NewGuid().ToString();
+            Name = dto.Name;
+            Type = dto.Type;
+            Ingredients = String.Join("\\", dto.Ingredients);
+            Instructions = String.Join(".", dto.Instructions);
+            Source = dto.Source;
+            ImageUrl = dto.ImageUrl;
+        }
     }
+
 }
