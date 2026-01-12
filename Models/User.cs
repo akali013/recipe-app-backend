@@ -7,6 +7,7 @@ namespace recipe_app_backend.Models
     {
         [Required]
         public string Id { get; set; }
+        [Required]
         public string Username { get; set; }
         [JsonIgnore]
         public string Password { get; set; }

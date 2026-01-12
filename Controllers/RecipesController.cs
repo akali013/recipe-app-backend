@@ -27,5 +27,11 @@ namespace recipe_app_backend.Controllers
         {
             return Ok(_recipeService.GetAllRecipes());
         }
+
+        [HttpGet("{id}")]
+        public ActionResult<RecipeResponse> GetRecipeById(string id)
+        {
+            return Ok(_recipeService.GetRecipeById(id));
+        }
     }
 }

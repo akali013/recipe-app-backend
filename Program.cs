@@ -25,7 +25,7 @@ builder.Services.AddDbContext<RecipeContext>(options =>
         builder.Configuration.GetConnectionString("RecipeContext") ?? throw new InvalidOperationException("Connection string 'RecipeContext' not found."),
         sql => sql.EnableRetryOnFailure(
             maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
+            maxRetryDelay: TimeSpan.FromSeconds(5),
             errorNumbersToAdd: null
         )
     )
@@ -56,7 +56,7 @@ using (var scope = app.Services.CreateScope())
     await DatabaseMigrator.SeedRecipesAsync(context);
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseCors(AllowSpecificOrigins);
 
