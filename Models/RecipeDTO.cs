@@ -2,10 +2,8 @@
 
 namespace recipe_app_backend.Models
 {
-    public class RecipeResponse
+    public class RecipeDTO
     {
-        [Required]
-        public string Id { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
@@ -17,10 +15,19 @@ namespace recipe_app_backend.Models
         public string? Source { get; set; }
         public string? ImageUrl { get; set; }
 
-        // Convert Recipe to RecipeResponse by separating instructions by periods and ingredients by backslashes
-        public RecipeResponse(Recipe recipe)
+        public RecipeDTO()
         {
-            Id = recipe.Id;
+            Name = "";
+            Type = "";
+            Ingredients = [];
+            Instructions = [];
+            Source = "";
+            ImageUrl = "";
+        }
+
+        // Convert Recipe to RecipeDTO by separating instructions by periods and ingredients by backslashes
+        public RecipeDTO(Recipe recipe)
+        {
             Name = recipe.Name;
             Type = recipe.Type;
             Ingredients = recipe.Ingredients.Split("\\", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

@@ -29,9 +29,15 @@ namespace recipe_app_backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<RecipeResponse> GetRecipeById(string id)
+        public ActionResult<Recipe> GetRecipeById(string id)
         {
             return Ok(_recipeService.GetRecipeById(id));
+        }
+
+        [HttpPost]
+        public ActionResult<Recipe> CreateRecipe([FromBody] RecipeDTO dto)
+        {
+            return Ok(_recipeService.CreateRecipe(dto));
         }
     }
 }
