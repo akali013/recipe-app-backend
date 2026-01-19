@@ -1,0 +1,12 @@
+﻿namespace recipe_app_backend.Models
+{
+    public class AccountResponse
+    {
+        public Guid Id { get; set; }
+        public string? Email { get; set; }
+        public string? Role { get; set; }
+        public DateTime Created { get; set; }
+        public DateTime? Updated { get; set; }
+        public bool IsBanned { get; set; }
+    }
+}
