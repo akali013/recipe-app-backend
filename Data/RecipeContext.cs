@@ -17,11 +17,14 @@ namespace recipe_app_backend.Data
         // Register FavoriteRecipe with a composite primary key
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<FavoriteRecipe>().HasKey(recipe => new { recipe.RecipeId, recipe.UserId });
+            modelBuilder.Entity<FavoriteRecipe>().HasKey(recipe => new { recipe.RecipeId, recipe.AccountId });
         }
 
+        // db tables
         public DbSet<Recipe> Recipes { get; set; } = default!;
         public DbSet<FavoriteRecipe> FavoriteRecipes { get; set; } = default!;
-        public DbSet<User> Users { get; set; } = default!;
+        public DbSet<Account> Accounts { get; set; } = default!;
+
+        // RefreshTokens is under Accounts
     }
 }

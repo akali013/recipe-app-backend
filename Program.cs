@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using recipe_app_backend.Authorization;
 using recipe_app_backend.Data;
 using recipe_app_backend.Helpers;
 using recipe_app_backend.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var AllowSpecificOrigins = "_AllowSpecificOrigins";
@@ -31,9 +32,18 @@ builder.Services.AddDbContext<RecipeContext>(options =>
     )
 );
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(o =>
+{
+    // Serialize enums as strings in API responses for Roles
+    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
-// Add services to the container.
+// Configure AppSettings object
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
+// Use DI for app services
+builder.Services.AddScoped<IJwtUtils, JwtUtils>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -61,6 +71,9 @@ using (var scope = app.Services.CreateScope())
 app.UseCors(AllowSpecificOrigins);
 
 app.UseAuthorization();
+
+app.UseMiddleware<ErrorHandlerMiddleware>();
+app.UseMiddleware<JWTMiddleware>();
 
 app.MapControllers();
 
