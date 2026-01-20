@@ -61,6 +61,15 @@ namespace recipe_app_backend.Helpers
             // Retrieve the list of recipes from the RecipeData.json file created by RecipeGetter.py
             var recipeJSONArray = await File.ReadAllTextAsync(path);
             List<Recipe> recipes = JsonSerializer.Deserialize<List<Recipe>>(recipeJSONArray)!;
+            recipes = recipes.Select(recipe =>
+            {
+                // Return the API's data source URL if no source is provided
+                if (recipe.Source == null)
+                {
+                    recipe.Source = "https://www.themealdb.com/meal/" + recipe.Id;
+                }
+                return recipe;
+            }).ToList();
 
 
             context.Recipes.AddRange(recipes);
