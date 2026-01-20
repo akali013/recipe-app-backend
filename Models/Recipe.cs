@@ -38,6 +38,17 @@ namespace recipe_app_backend.Models
             Source = dto.Source;
             ImageUrl = dto.ImageUrl;
         }
+
+        public Recipe(CreateRecipeRequest request)
+        {
+            Id = Guid.NewGuid().ToString();
+            Name = request.Name!;
+            Type = request.Type!;
+            Ingredients = String.Join("\\", request.Ingredients!);
+            Instructions = String.Join(".", request.Instructions!);
+            Source = request.UserId.ToString();
+            ImageUrl = request.ImageUrl;
+        }
     }
 
 }

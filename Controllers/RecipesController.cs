@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using recipe_app_backend.Authorization;
 using recipe_app_backend.Data;
 using recipe_app_backend.Models;
 using recipe_app_backend.Services;
@@ -12,6 +13,7 @@ using recipe_app_backend.Services;
 namespace recipe_app_backend.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class RecipesController : Controller
     {
@@ -35,9 +37,16 @@ namespace recipe_app_backend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Recipe> CreateRecipe([FromBody] RecipeDTO dto)
+        public ActionResult<Recipe> CreateRecipe([FromBody] CreateRecipeRequest request)
         {
-            return Ok(_recipeService.CreateRecipe(dto));
+            return Ok(_recipeService.CreateRecipe(request));
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteRecipe(string id)
+        {
+            _recipeService.DeleteRecipe(id);
+            return Ok( new { message = "Recipe deleted successfully." });
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using recipe_app_backend.Data;
+﻿using Microsoft.AspNetCore.Mvc;
+using recipe_app_backend.Data;
 using recipe_app_backend.Models;
 
 namespace recipe_app_backend.Services
@@ -7,7 +8,8 @@ namespace recipe_app_backend.Services
     {
         public List<Recipe> GetAllRecipes();
         public RecipeDTO GetRecipeById(string id);
-        public Recipe CreateRecipe(RecipeDTO recipe);
+        public Recipe CreateRecipe(CreateRecipeRequest recipe);
+        public void DeleteRecipe(string id);
     }
 
     public class RecipeService : IRecipeService
@@ -32,24 +34,32 @@ namespace recipe_app_backend.Services
                 throw new KeyNotFoundException("Recipe not found!");
             }
 
-            // Return the API's data source URL if no source is provided
-            if (recipe.Source == null)
-            {
-                recipe.Source = "https://www.themealdb.com/meal/" + recipe.Id;
-            }
 
             return new RecipeDTO(recipe);
         }
 
-        public Recipe CreateRecipe(RecipeDTO dto)
+        public Recipe CreateRecipe(CreateRecipeRequest request)
         {
-            AppendPeriods(dto.Instructions);
-            Recipe recipe = new Recipe(dto);
+            AppendPeriods(request.Instructions!);
+            Recipe recipe = new Recipe(request);
 
             _context.Recipes.Add(recipe);
             _context.SaveChanges();
 
             return recipe;
+        }
+
+        public void DeleteRecipe(string id)
+        {
+            Recipe? deletedRecipe = _context.Recipes.SingleOrDefault(r => r.Id == id);
+            
+            if (deletedRecipe == null)
+            {
+                throw new KeyNotFoundException("Recipe not found!");
+            }
+
+            _context.Recipes.Remove(deletedRecipe);
+            _context.SaveChanges();
         }
 
 
