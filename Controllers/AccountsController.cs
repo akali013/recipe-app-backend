@@ -112,6 +112,13 @@ namespace recipe_app_backend.Controllers
             return Ok(new { message = "Account deleted successfully." });
         }
 
+        [Authorize(Role.Admin)]
+        [HttpGet("users")]
+        public ActionResult<List<AccountResponse>> GetAllUsers()
+        {
+            return Ok(_accountService.GetAllUsers());
+        }
+
 
         private void setTokenCookie(string token)
         {

@@ -18,6 +18,7 @@ namespace recipe_app_backend.Services
         AccountResponse CreateAccount(CreateRequest model);
         AccountResponse UpdateAccount(Guid id, UpdateRequest model);
         void DeleteAccount(Guid id);
+        List<AccountResponse> GetAllUsers();
     }
 
 
@@ -192,7 +193,8 @@ namespace recipe_app_backend.Services
                 Email = model.Email,
                 Password = Encryption.HashPassword(model.Password),
                 Created = DateTime.UtcNow,
-                IsBanned = false
+                IsBanned = false,
+                Role = Role.User
             };
 
             _context.Accounts.Add(account);
@@ -242,6 +244,21 @@ namespace recipe_app_backend.Services
             Account account = getAccount(id);
             _context.Accounts.Remove(account);
             _context.SaveChanges();
+        }
+
+        public List<AccountResponse> GetAllUsers()
+        {
+            List<Account> users = _context.Accounts.Where(a => a.Role == Role.User).ToList();
+
+            return users.Select(account => new AccountResponse
+            {
+                Id = account.Id,
+                Email = account.Email,
+                Role = account.Role.ToString(),
+                Created = account.Created,
+                Updated = account.Updated,
+                IsBanned = account.IsBanned
+            }).ToList();
         }
 
 
