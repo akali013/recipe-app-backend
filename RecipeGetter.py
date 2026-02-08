@@ -35,7 +35,7 @@ def convertRecipe(recipe):
         "Name": recipe["strMeal"],
         "Type": recipe["strCategory"],
         "Ingredients": getIngredients(recipe),
-        "Instructions": recipe["strInstructions"].replace("\r", "").replace("\n", ""),
+        "Instructions": recipe["strInstructions"].replace("\r", "").replace("\n", "").split("."),
         "Source": recipe["strSource"],
         "ImageUrl": recipe["strMealThumb"]
     }
@@ -56,7 +56,7 @@ def getIngredients(recipe):
         currentIngredient = str(recipe["strIngredient" + str(i)])
         currentMeasure = str(recipe["strMeasure" + str(i)])
         
-    return ingredients
+    return ingredients.split("\\")
     
 
 # Convert the JSON data to a JSON file so the .NET app can seed the db

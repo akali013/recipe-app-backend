@@ -3,8 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace recipe_app_backend.Models
 {
-    public class CreateRecipeRequest
+    public class RecipeRequest
     {
+        [Required]
+        public string? Id { get; set; }
         [Required]
         public string? Name { get; set; }
         [Required]
@@ -13,9 +15,8 @@ namespace recipe_app_backend.Models
         public string[]? Ingredients { get; set; }
         [Required]
         public string[]? Instructions { get; set; }
+        public string? Source { get; set; }
         public string? ImageUrl { get; set; }
-        [Required]
-        public Guid? UserId { get; set; }
         public IFormFile? RecipeImage { get; set; }
     }
 }
