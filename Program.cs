@@ -68,6 +68,9 @@ using (var scope = app.Services.CreateScope())
 
 //app.UseHttpsRedirection();
 
+// For serving recipe images at http://localhost:5133/recipeImages/{fileName}
+app.UseStaticFiles();      
+
 app.UseCors(AllowSpecificOrigins);
 
 app.UseAuthorization();

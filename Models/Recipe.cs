@@ -11,9 +11,9 @@ namespace recipe_app_backend.Models
         [Required]
         public string Type { get; set; }
         [Required]
-        public string Ingredients { get; set; }
+        public string[]? Ingredients { get; set; }
         [Required]
-        public string Instructions { get; set; }
+        public string[]? Instructions { get; set; }
         public string? Source { get; set; }
         public string? ImageUrl { get; set; }
 
@@ -22,21 +22,10 @@ namespace recipe_app_backend.Models
             Id = Guid.NewGuid().ToString();
             Name = "";
             Type = "";
-            Ingredients = "";
-            Instructions = "";
+            Ingredients = [];
+            Instructions = [];
             Source = "";
             ImageUrl = "";
-        }
-
-        public Recipe(RecipeDTO dto)
-        {
-            Id = Guid.NewGuid().ToString();
-            Name = dto.Name;
-            Type = dto.Type;
-            Ingredients = String.Join("\\", dto.Ingredients);
-            Instructions = String.Join(".", dto.Instructions);
-            Source = dto.Source;
-            ImageUrl = dto.ImageUrl;
         }
 
         public Recipe(CreateRecipeRequest request)
@@ -44,8 +33,8 @@ namespace recipe_app_backend.Models
             Id = Guid.NewGuid().ToString();
             Name = request.Name!;
             Type = request.Type!;
-            Ingredients = String.Join("\\", request.Ingredients!);
-            Instructions = String.Join(".", request.Instructions!);
+            Ingredients = request.Ingredients;
+            Instructions = request.Instructions!;
             Source = request.UserId.ToString();
             ImageUrl = request.ImageUrl;
         }

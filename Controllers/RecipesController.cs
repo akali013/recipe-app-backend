@@ -15,7 +15,7 @@ namespace recipe_app_backend.Controllers
     [ApiController]
     [Authorize]
     [Route("[controller]")]
-    public class RecipesController : Controller
+    public class RecipesController : BaseController
     {
         private IRecipeService _recipeService;
 
@@ -37,9 +37,36 @@ namespace recipe_app_backend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Recipe> CreateRecipe([FromBody] CreateRecipeRequest request)
+        public ActionResult<Recipe> CreateRecipe([FromForm] CreateRecipeRequest request)    // [FromForm] allows multipart/form-data (FormData) requests
         {
             return Ok(_recipeService.CreateRecipe(request));
+        }
+
+        [HttpPut("{id}")]
+        public ActionResult<Recipe> UpdateRecipe(string id, [FromForm] RecipeRequest recipe)    // [FromForm] allows multipart/form-data (FormData) requests
+        {
+            // Admins can edit any recipe
+            if (currentAccount.Role == Role.Admin)
+            {
+                return Ok(_recipeService.UpdateRecipe(id, recipe));
+            }
+
+            // Users can only update their own recipes
+            Guid recipeSource;
+
+            // If the recipe is a MealDB URL, it is not from the user
+            try
+            {
+                recipeSource = new Guid(recipe.Source!);
+            }
+            catch (Exception e)
+            {
+                return Unauthorized(new { message = "You can only update your own recipes." });
+            }
+
+            if (currentAccount.Id != recipeSource) return Unauthorized(new { message = "You can only update your own recipes." });
+
+            return Ok(_recipeService.UpdateRecipe(id, recipe));
         }
 
         [HttpDelete("{id}")]
