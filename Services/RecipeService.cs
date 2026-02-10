@@ -13,6 +13,7 @@ namespace recipe_app_backend.Services
         public Recipe CreateRecipe(CreateRecipeRequest recipe);
         public Recipe UpdateRecipe(string id, RecipeRequest recipe);
         public void DeleteRecipe(string id);
+        public List<Recipe> GetRecipesByUserId(Guid id);
     }
 
     public class RecipeService : IRecipeService
@@ -131,6 +132,12 @@ namespace recipe_app_backend.Services
 
             _context.Recipes.Remove(deletedRecipe);
             _context.SaveChanges();
+        }
+
+        public List<Recipe> GetRecipesByUserId(Guid id)
+        {
+            List<Recipe> recipes = _context.Recipes.Where(recipe => recipe.Source == id.ToString()).ToList();
+            return recipes;
         }
 
 

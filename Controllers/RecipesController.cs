@@ -75,5 +75,18 @@ namespace recipe_app_backend.Controllers
             _recipeService.DeleteRecipe(id);
             return Ok( new { message = "Recipe deleted successfully." });
         }
+
+        [HttpGet("users/{id}")]
+        public ActionResult<List<Recipe>> GetUserRecipes(Guid id)
+        {
+            List<Recipe> userRecipes = _recipeService.GetRecipesByUserId(id); 
+            // Only admins or the relevant user can view a user's recipes
+            if (currentAccount.Role == Role.Admin || userRecipes.All(r => r.Source == currentAccount.Id.ToString()))
+            {
+                return Ok(userRecipes);
+            }
+
+            return Unauthorized(new { message = "You can only view your own published recipes." });
+        }
     }
 }
