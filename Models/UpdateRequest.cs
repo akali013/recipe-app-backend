@@ -2,8 +2,10 @@
 
 namespace recipe_app_backend.Models
 {
+    // Model class for requests updating accounts
     public class UpdateRequest
     {
+        // Instance variables for the account attributes that can be optionally updated
         private string? _password;
         private string? _confirmPassword;
         private string? _role;
@@ -23,6 +25,7 @@ namespace recipe_app_backend.Models
             set => _email = replaceEmptyWithNull(value);
         }
 
+        [MinLength(8)]
         public string Password
         {
             get => _password ?? "";
@@ -38,10 +41,10 @@ namespace recipe_app_backend.Models
 
         public bool? IsBanned { get; set; }
 
-        
+
+        // Replace empty strings with null to make any field optional for partial updates
         private string replaceEmptyWithNull(string value)
         {
-            // Replace empty strings with null to make any field optional for partial updates
             return (string.IsNullOrEmpty(value) ? null : value)!;
         }
     }

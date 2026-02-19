@@ -7,7 +7,7 @@ namespace recipe_app_backend.Authorization
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeAttribute : Attribute, IAuthorizationFilter
     {
-        private readonly IList<Role> _requiredRoles;
+        private readonly IList<Role> _requiredRoles;    // Specifies the roles required to access the associated controller endpoint
         
         public AuthorizeAttribute(params Role[] roles)
         {
@@ -20,7 +20,7 @@ namespace recipe_app_backend.Authorization
             var allowAnonymous = context.ActionDescriptor.EndpointMetadata.OfType<AllowAnonymousAttribute>().Any();
             if (allowAnonymous) return;
 
-            // Check if the user is logged in
+            // Check if the user is logged in via their JWT access token
             var account = (Account) context.HttpContext.Items["Account"];
             if (account == null || (_requiredRoles.Any() && !_requiredRoles.Contains(account.Role)))
             {

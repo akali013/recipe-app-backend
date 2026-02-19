@@ -2,6 +2,7 @@
 
 namespace recipe_app_backend.Helpers
 {
+    // Exception class that handles any general error messages to be sent to the client.
     public class AppException : Exception
     {
         public AppException() : base() { }

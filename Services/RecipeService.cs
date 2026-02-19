@@ -20,7 +20,7 @@ namespace recipe_app_backend.Services
     {
         private readonly RecipeContext _context;
         private readonly IWebHostEnvironment _env;      // Used to retrieve image file directory
-        private string[] allowedTypes = [
+        private string[] allowedTypes = [               // Allowed image file types for recipe image files
             "image/apng",
             "image/bmp",
             "image/gif",
@@ -39,11 +39,13 @@ namespace recipe_app_backend.Services
             _env = env;
         }
 
+        // Get all recipes in the database
         public List<Recipe> GetAllRecipes()
         {
             return _context.Recipes.ToList();
         }
 
+        // Get the information for the recipe under the given id
         public Recipe GetRecipeById(string id)
         {
             Recipe? recipe = _context.Recipes.SingleOrDefault(recipe => recipe.Id == id);
@@ -53,22 +55,24 @@ namespace recipe_app_backend.Services
                 throw new KeyNotFoundException("Recipe not found!");
             }
 
-            // Create lists of ingredients and instructions
-            recipe.Ingredients = recipe.Ingredients![0].Split(",");
-            recipe.Instructions = recipe.Instructions![0].Split(",");
-
-
             return recipe;
         }
 
+        // Creates a user-submitted recipe in the database 
         public Recipe CreateRecipe(CreateRecipeRequest request)
         {
             AppendPeriods(request.Instructions!);
-            Recipe recipe = new Recipe(request);
+            Recipe recipe = new Recipe(request);        // Create a new recipe object from the request
 
-            // Create the recipe image in the backend storage and save the file name in the db
+            // Create the recipe image in the backend storage and save the file location in the database
             if (request.RecipeImage != null)
             {
+                // Verify that the new image file has a valid image type
+                if (!allowedTypes.Contains(request.RecipeImage.ContentType))
+                {
+                    throw new AppException("Recipe image file must have a valid image type. Examples: .png, .jpg, .gif, etc.");
+                }
+
                 recipe.ImageUrl = createRecipeImage(new RecipeRequest
                 {
                     Name = request.Name,
@@ -87,6 +91,7 @@ namespace recipe_app_backend.Services
             return recipe;
         }
 
+        // Updates the recipe under the given id in the database
         public Recipe UpdateRecipe(string id, RecipeRequest recipe)
         {
             Recipe? recipeToUpdate = _context.Recipes.SingleOrDefault(r => r.Id == id);
@@ -115,12 +120,13 @@ namespace recipe_app_backend.Services
             recipeToUpdate.Instructions = recipe.Instructions;
             recipeToUpdate.Source = recipe.Source;
 
-            _context.Update(recipeToUpdate);
+            _context.Recipes.Update(recipeToUpdate);
             _context.SaveChanges();
 
             return recipeToUpdate;
         }
 
+        // Deletes the recipe under the given id from the database
         public void DeleteRecipe(string id)
         {
             Recipe? deletedRecipe = _context.Recipes.SingleOrDefault(r => r.Id == id);
@@ -134,14 +140,15 @@ namespace recipe_app_backend.Services
             _context.SaveChanges();
         }
 
+        // Gets the recipes created by the user under the given id from the database
         public List<Recipe> GetRecipesByUserId(Guid id)
         {
             List<Recipe> recipes = _context.Recipes.Where(recipe => recipe.Source == id.ToString()).ToList();
             return recipes;
         }
 
-
-        // Add periods to the end of each instruction if the user did not include periods.
+        // Helper methods
+        // Add periods to the end of each instruction if the user did not include periods in their submitted recipe
         private void AppendPeriods(string[] instructions)
         {
             for (int i = 0; i < instructions.Length; i++)
@@ -154,7 +161,7 @@ namespace recipe_app_backend.Services
         }
 
         // Creates a new recipe image in the wwwroot/recipeImages directory and returns the file name
-        // Essentially, store the actual file in the backend and the file name in the db
+        // Essentially, store the actual file in the backend and the file name in the database
         private string createRecipeImage(RecipeRequest recipe)
         {
             // Delete the old image if it exists
@@ -164,9 +171,11 @@ namespace recipe_app_backend.Services
             }
 
             // Generate a unique filename for the image and save it at the wwwroot/recipeImages directory
+            // Filename = Guid + file extension
             string fileName = $"{Guid.NewGuid()}{Path.GetExtension(recipe.RecipeImage!.FileName)}";
             var dirPath = Path.Combine(_env.WebRootPath, "recipeImages");
 
+            // Create the wwwroot/recipeImages directory if it does not exist
             if (!Directory.Exists(dirPath))
             {
                 Directory.CreateDirectory(dirPath);

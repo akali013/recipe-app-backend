@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 var AllowSpecificOrigins = "_AllowSpecificOrigins";
 
+// Allow requests from the frontend running on ports 8080 and 4200 (Angular dev port)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: AllowSpecificOrigins,
@@ -21,6 +22,7 @@ builder.Services.AddCors(options =>
     );
 });
 
+// Connect to the SQL Server database under RecipeContext using the connection string in appsettings.json
 builder.Services.AddDbContext<RecipeContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("RecipeContext") ?? throw new InvalidOperationException("Connection string 'RecipeContext' not found."),
@@ -38,7 +40,7 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-// Configure AppSettings object
+// Configure AppSettings object to map to the settings in appsettings.json
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 // Use DI for app services
@@ -57,7 +59,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Migrate the database during startup so the RecipeDB database exists with the initial recipe data.
+// Migrate the database during startup so the RecipesDB database exists with the initial recipe data.
 using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
@@ -75,6 +77,7 @@ app.UseCors(AllowSpecificOrigins);
 
 app.UseAuthorization();
 
+// Enable error handling and JWT middleware
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseMiddleware<JWTMiddleware>();
 
