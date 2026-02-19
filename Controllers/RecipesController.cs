@@ -14,7 +14,7 @@ namespace recipe_app_backend.Controllers
 {
     [ApiController]
     [Authorize]
-    [Route("[controller]")]
+    [Route("[controller]")]     // This controller endpoint is at /recipes
     public class RecipesController : BaseController
     {
         private IRecipeService _recipeService;
@@ -24,24 +24,28 @@ namespace recipe_app_backend.Controllers
             _recipeService = recipeService;
         }
 
+        // GET requests to /recipes returns all recipes in the database
         [HttpGet]
         public ActionResult<List<Recipe>> GetAllRecipes()
         {
             return Ok(_recipeService.GetAllRecipes());
         }
 
+        // GET requests to /recipes/{id} returns the recipe with the specified id
         [HttpGet("{id}")]
         public ActionResult<Recipe> GetRecipeById(string id)
         {
             return Ok(_recipeService.GetRecipeById(id));
         }
 
+        // POST requests to /recipes creates a new recipe
         [HttpPost]
         public ActionResult<Recipe> CreateRecipe([FromForm] CreateRecipeRequest request)    // [FromForm] allows multipart/form-data (FormData) requests
         {
             return Ok(_recipeService.CreateRecipe(request));
         }
 
+        // PUT requests to /recipes/{id} updates the recipe with the associated id
         [HttpPut("{id}")]
         public ActionResult<Recipe> UpdateRecipe(string id, [FromForm] RecipeRequest recipe)    // [FromForm] allows multipart/form-data (FormData) requests
         {
@@ -54,7 +58,8 @@ namespace recipe_app_backend.Controllers
             // Users can only update their own recipes
             Guid recipeSource;
 
-            // If the recipe is a MealDB URL, it is not from the user
+            // If the recipe source is a MealsDB API URL, it is not from the user
+            // otherwise, it must be the id of the user that created it
             try
             {
                 recipeSource = new Guid(recipe.Source!);
@@ -69,6 +74,7 @@ namespace recipe_app_backend.Controllers
             return Ok(_recipeService.UpdateRecipe(id, recipe));
         }
 
+        // DELETE requests to /recipes/{id} deletes the recipe with the specified id
         [HttpDelete("{id}")]
         public IActionResult DeleteRecipe(string id)
         {
@@ -76,6 +82,7 @@ namespace recipe_app_backend.Controllers
             return Ok( new { message = "Recipe deleted successfully." });
         }
 
+        // GET requests to /users/{id} returns all recipes created by the user with the specified id
         [HttpGet("users/{id}")]
         public ActionResult<List<Recipe>> GetUserRecipes(Guid id)
         {

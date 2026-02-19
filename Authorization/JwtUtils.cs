@@ -32,10 +32,10 @@ namespace recipe_app_backend.Authorization
         {
             // Generate an access token that expires after 15 minutes
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);     // Use the app secret to sign/verify tokens
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity([new Claim("id", account.Id.ToString())]),
+                Subject = new ClaimsIdentity([new Claim("id", account.Id.ToString())]), // Store the account id in the token claims
                 Expires = DateTime.UtcNow.AddMinutes(15),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -48,7 +48,7 @@ namespace recipe_app_backend.Authorization
             if (token == null) return null;
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);         // Use the app secret to sign/verify tokens
             try
             {
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
@@ -61,9 +61,10 @@ namespace recipe_app_backend.Authorization
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken) validatedToken;
+                // Recover the account id from the token claims
                 var accountId = Guid.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
 
-                // Return the account id from the jwt token if successful
+                // Return the account id upon successful validation
                 return accountId;
             }
             catch

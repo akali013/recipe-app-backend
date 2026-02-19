@@ -3,6 +3,7 @@ using recipe_app_backend.Models;
 
 namespace recipe_app_backend.Controllers
 {
+    // Abstract controller that provides the currently authenticated account to all extending controllers
     [Controller]
     public abstract class BaseController : ControllerBase
     {

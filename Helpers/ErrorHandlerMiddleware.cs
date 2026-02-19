@@ -22,6 +22,7 @@ namespace recipe_app_backend.Helpers
             }
             catch (Exception error)
             {
+                // Catch any exceptions from the backend logic and send the correct message to the client
                 var response = context.Response;
                 response.ContentType = "application/json";
 

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace recipe_app_backend.Models
 {
+    // Model class for updating recipe requests.
     public class RecipeRequest
     {
         [Required]

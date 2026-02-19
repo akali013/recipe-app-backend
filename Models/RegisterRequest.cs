@@ -2,6 +2,7 @@
 
 namespace recipe_app_backend.Models
 {
+    // Model class for users signing up for an account
     public class RegisterRequest
     {
         [Required]

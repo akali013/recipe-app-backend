@@ -2,6 +2,7 @@
 
 namespace recipe_app_backend.Models
 {
+    // Model class for admin requests about creating a new account
     public class CreateRequest
     {
         [Required]
@@ -13,7 +14,7 @@ namespace recipe_app_backend.Models
         public string? Role { get; set; }
 
         [Required]
-        [MinLength(8)]      // Enforce min password length
+        [MinLength(8)]
         public string? Password { get; set; }
 
         [Required]      

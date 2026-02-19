@@ -7,6 +7,7 @@ using recipe_app_backend.Models;
 
 namespace recipe_app_backend.Data
 {
+    // This class represents the database
     public class RecipeContext : DbContext
     {
         public RecipeContext (DbContextOptions<RecipeContext> options)
@@ -14,17 +15,17 @@ namespace recipe_app_backend.Data
         {
         }
 
-        // Register FavoriteRecipe with a composite primary key
+        // Register the FavoriteRecipes table with a composite primary key consisting of the recipeId and the accountId
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FavoriteRecipe>().HasKey(recipe => new { recipe.RecipeId, recipe.AccountId });
         }
 
-        // db tables
-        public DbSet<Recipe> Recipes { get; set; } = default!;
-        public DbSet<FavoriteRecipe> FavoriteRecipes { get; set; } = default!;
-        public DbSet<Account> Accounts { get; set; } = default!;
+        // Database tables
+        public DbSet<Recipe> Recipes { get; set; } = default!;      // Recipes table
+        public DbSet<FavoriteRecipe> FavoriteRecipes { get; set; } = default!;      // FavoriteRecipes table
+        public DbSet<Account> Accounts { get; set; } = default!;        // Accounts table
 
-        // RefreshTokens is under Accounts
+        // RefreshTokens is under Accounts due to its [Owned] attribute
     }
 }

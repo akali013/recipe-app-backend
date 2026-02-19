@@ -26,21 +26,21 @@ def get_all_recipes():
         except requests.exceptions.RequestException as e:
             print("Error:", e)
             return None
-    return recipeData
+    return recipeData       # Return a list of all converted recipes under recipeData["recipes"]
 
-# Reformat the data to match the Recipe Model in the .NET app
+# Reformat the API data to match the Recipe model class in the .NET app
 def convertRecipe(recipe):
     return {
         "Id": recipe["idMeal"],
         "Name": recipe["strMeal"],
         "Type": recipe["strCategory"],
         "Ingredients": getIngredients(recipe),
-        "Instructions": recipe["strInstructions"].replace("\r", "").replace("\n", "").split("."),
+        "Instructions": recipe["strInstructions"].replace("\r", "").replace("\n", "").split("."),  # Instructions are assumed to be separated by periods 
         "Source": recipe["strSource"],
         "ImageUrl": recipe["strMealThumb"]
     }
 
-# Combine the ingredients and measurements from the API into a single list
+# Combine the ingredients and measurements from the API into a single list of ingredients
 def getIngredients(recipe):
     ingredients = ""
     info = ""
@@ -48,18 +48,19 @@ def getIngredients(recipe):
     currentMeasure = str(recipe["strMeasure1"])
     currentIngredient = str(recipe["strIngredient1"])
     
-    while (currentMeasure != "" and currentIngredient != "" and currentMeasure != "None" and currentIngredient != "None" and i < 20):
+    while (currentMeasure != "" and currentIngredient != "" and currentMeasure != "None" and currentIngredient != "None" and i < 20):       # Assume 20 ingredients max
         info = currentMeasure + " " + currentIngredient
+        # Separate ingredients by a backslash so they can be separated later into a list
         info = info.replace("\\", " ")
-        ingredients += info + "\\"      # Separate ingredients by a backslash so they can be separated later into a list.
+        ingredients += info + "\\"
         i += 1
         currentIngredient = str(recipe["strIngredient" + str(i)])
         currentMeasure = str(recipe["strMeasure" + str(i)])
         
-    return ingredients.split("\\")
+    return ingredients.split("\\")      # Return a list of ingredients
     
 
-# Convert the JSON data to a JSON file so the .NET app can seed the db
+# Convert the JSON data into a JSON file (RecipeData.json) via pandas so the .NET app can seed the database
 recipeJSON = get_all_recipes()
 
 df = pd.json_normalize(recipeJSON["recipes"])
