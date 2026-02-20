@@ -7,9 +7,9 @@ namespace recipe_app_backend.Models
     {
         [Required]
         [EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; }
         [Required]
         [MinLength(8)]      // Passwords must be at least 8 characters long
-        public string? Password { get; set; }
+        public string Password { get; set; }
     }
 }

@@ -7,18 +7,18 @@ namespace recipe_app_backend.Models
     {
         [Required]
         [EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         [Required]
         [EnumDataType(typeof(Role))]    // Confirm that this value is User or Admin
-        public string? Role { get; set; }
+        public string Role { get; set; }
 
         [Required]
         [MinLength(8)]
-        public string? Password { get; set; }
+        public string Password { get; set; }
 
         [Required]      
         [Compare("Password")]       // Ensure this matches the Password field
-        public string? ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; }
     }
 }

@@ -6,8 +6,8 @@ namespace recipe_app_backend.Models
     public class FavoriteRecipe
     {
         [Required]
-        public string? RecipeId { get; set; }       // Recipe being favorited
+        public string RecipeId { get; set; }       // Recipe being favorited
         [Required]
-        public Guid? AccountId { get; set; }      // User who favorited the recipe
+        public Guid AccountId { get; set; }      // User who favorited the recipe
     }
 }

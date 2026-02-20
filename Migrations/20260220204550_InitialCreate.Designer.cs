@@ -12,8 +12,8 @@ using recipe_app_backend.Data;
 namespace recipe_app_backend.Migrations
 {
     [DbContext(typeof(RecipeContext))]
-    [Migration("20260205040822_RemovedRecipeDTO")]
-    partial class RemovedRecipeDTO
+    [Migration("20260220204550_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -59,8 +59,8 @@ namespace recipe_app_backend.Migrations
                     b.Property<string>("RecipeId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("AccountId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("RecipeId", "AccountId");
 

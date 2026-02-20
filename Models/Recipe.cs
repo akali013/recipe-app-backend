@@ -12,9 +12,9 @@ namespace recipe_app_backend.Models
         [Required]
         public string Type { get; set; }
         [Required]
-        public string[]? Ingredients { get; set; }
+        public string[] Ingredients { get; set; }
         [Required]
-        public string[]? Instructions { get; set; }
+        public string[] Instructions { get; set; }
         public string? Source { get; set; }         // Can be a MealDB API URL or a user id
         public string? ImageUrl { get; set; }
 

@@ -7,14 +7,14 @@ namespace recipe_app_backend.Models
     {
         [Required]
         [EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         [Required]
         [MinLength(8)]
-        public string? Password { get; set; }
+        public string Password { get; set; }
 
         [Required]
         [Compare("Password")]
-        public string? ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; }
     }
 }

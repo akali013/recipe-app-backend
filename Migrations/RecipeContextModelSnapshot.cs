@@ -56,8 +56,8 @@ namespace recipe_app_backend.Migrations
                     b.Property<string>("RecipeId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("AccountId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("RecipeId", "AccountId");
 
