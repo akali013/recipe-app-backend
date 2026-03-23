@@ -96,7 +96,7 @@ namespace recipe_app_backend.Controllers
 
         // Updates the account with a matching id at /accounts/{id} for PUT requests
         [HttpPut("{id}")]
-        public ActionResult<AccountResponse> UpdateAccount(Guid id, UpdateRequest model)
+        public ActionResult<AccountResponse> UpdateAccount(Guid id, [FromBody] UpdateRequest model)
         {
             // Users can update their own account while admins can update any account
             if (id != currentAccount.Id && currentAccount.Role != Role.Admin) return Unauthorized(new { message = "Unauthorized" });

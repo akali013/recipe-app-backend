@@ -25,7 +25,6 @@ namespace recipe_app_backend.Models
             set => _email = replaceEmptyWithNull(value);
         }
 
-        [MinLength(8)]
         public string Password
         {
             get => _password ?? "";
