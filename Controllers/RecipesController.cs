@@ -95,5 +95,21 @@ namespace recipe_app_backend.Controllers
 
             return Unauthorized(new { message = "You can only view your own published recipes." });
         }
+
+        // GET requests to /favorite/{id} returns all recipes favorited by the specified user
+        [HttpGet("favorite/{id}")]
+        public ActionResult<List<Recipe>> GetFavoriteRecipes(string id)
+        {
+            Guid userId = new Guid(id);
+            return Ok(_recipeService.GetFavoriteRecipes(userId));
+        }
+
+        // POST requests to /favorite/{id} adds/removes the recipe with the specified id to/from the specified user's favorite recipes
+        [HttpPost("favorite/{id}")]
+        public ActionResult<Recipe> ToggleFavoriteRecipe(string id, [FromBody] FavoriteRequest request)
+        {
+            Guid userGuid = new Guid(request.userId);
+            return Ok(_recipeService.ToggleFavoriteRecipe(id, userGuid));
+        }
     }
 }

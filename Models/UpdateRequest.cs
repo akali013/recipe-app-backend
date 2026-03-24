@@ -18,7 +18,6 @@ namespace recipe_app_backend.Models
             set => _role = replaceEmptyWithNull(value);
         }
 
-        [EmailAddress]
         public string Email
         {
             get => _email ?? "";
