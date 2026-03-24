@@ -14,6 +14,8 @@ namespace recipe_app_backend.Services
         public Recipe UpdateRecipe(string id, RecipeRequest recipe);
         public void DeleteRecipe(string id);
         public List<Recipe> GetRecipesByUserId(Guid id);
+        public List<Recipe> GetFavoriteRecipes(Guid userId);
+        public Recipe ToggleFavoriteRecipe(string recipeId, Guid userId);
     }
 
     public class RecipeService : IRecipeService
@@ -146,6 +148,51 @@ namespace recipe_app_backend.Services
             List<Recipe> recipes = _context.Recipes.Where(recipe => recipe.Source == id.ToString()).ToList();
             return recipes;
         }
+
+        // Retrieves all recipes favorited by the user with the matching userId
+        public List<Recipe> GetFavoriteRecipes(Guid userId)
+        {
+            List<FavoriteRecipe> favoritedRecipes = _context.FavoriteRecipes.Where(r => r.AccountId == userId).ToList();
+            List<Recipe> recipes = favoritedRecipes.Select(fav => _context.Recipes.SingleOrDefault(r => r.Id == fav.RecipeId)).ToList()!;
+
+            return recipes;
+        }
+
+        // Adds/Removes the recipe under the given recipeId to/from the specified user's list of favorite recipes
+        public Recipe ToggleFavoriteRecipe(string recipeId, Guid userId)
+        {
+            Recipe? recipe = _context.Recipes.SingleOrDefault(r => r.Id == recipeId);
+
+            if (recipe == null)
+            {
+                throw new AppException("Recipe not found!");
+            }
+
+            // Check if the recipe is favorited or not by the user
+            FavoriteRecipe? favoritedRecipe = _context.FavoriteRecipes.SingleOrDefault(r => r.RecipeId == recipe.Id && r.AccountId == userId);
+            if (favoritedRecipe == null)
+            {
+                // Add the new favorite recipe
+                FavoriteRecipe newFavorite = new FavoriteRecipe
+                {
+                    RecipeId = recipe.Id,
+                    AccountId = userId
+                };
+
+                _context.FavoriteRecipes.Add(newFavorite);
+            }
+            else
+            {
+                // Remove the favorite recipe from the user's list
+                _context.FavoriteRecipes.Remove(favoritedRecipe);
+            }
+
+            _context.SaveChanges();
+
+            return recipe;
+        }
+
+
 
         // Helper methods
         // Add periods to the end of each instruction if the user did not include periods in their submitted recipe

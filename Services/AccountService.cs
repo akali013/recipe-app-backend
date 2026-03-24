@@ -229,10 +229,13 @@ namespace recipe_app_backend.Services
             if (account.Email != model.Email && _context.Accounts.Any(a => a.Email == model.Email))
                 throw new AppException($"Email '{model.Email}' is already taken");
 
+            // Replace any values with new ones from the model
             if (!string.IsNullOrEmpty(model.Password))
                 account.Password = Encryption.HashPassword(model.Password);
 
-            account.Email = model.Email;
+            if (!string.IsNullOrEmpty(model.Email))
+                account.Email = model.Email;
+
             account.IsBanned = model.IsBanned ?? account.IsBanned;
             account.Updated = DateTime.UtcNow;
 
