@@ -200,7 +200,7 @@ namespace recipe_app_backend.Services
         {
             for (int i = 0; i < instructions.Length; i++)
             {
-                if (!instructions[i].EndsWith("."))
+                if (!instructions[i].Trim().EndsWith("."))
                 {
                     instructions[i] += ".";
                 }

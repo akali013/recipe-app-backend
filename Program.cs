@@ -22,10 +22,14 @@ builder.Services.AddCors(options =>
     );
 });
 
-// Connect to the SQL Server database under RecipeContext using the connection string in appsettings.json
+// Docker connection string setup with secrets
+var password = File.ReadAllText("/run/secrets/SA_PASSWORD").Trim();
+var dockerConnectionString = $"Server=db;Database=RecipesDB;User Id=sa;Password={password};MultipleActiveResultSets=true;TrustServerCertificate=true;";
+
+// Connect to the SQL Server database under RecipeContext using the connection string in appsettings.json (or Docker secrets)
 builder.Services.AddDbContext<RecipeContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("RecipeContext") ?? throw new InvalidOperationException("Connection string 'RecipeContext' not found."),
+        dockerConnectionString ?? throw new InvalidOperationException("Connection string 'RecipeContext' not found."),
         sql => sql.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(5),
