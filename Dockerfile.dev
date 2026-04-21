@@ -1,0 +1,15 @@
+# Source: https://docs.docker.com/guides/dotnet/develop/
+
+
+# Use python image to run RecipeGetter.py to initialize recipe data in RecipeData.json
+FROM python:3.13.13-alpine3.23 AS recipe-getter
+WORKDIR /recipeData
+COPY RecipeGetter.py .
+RUN pip install requests pandas
+RUN python RecipeGetter.py
+
+FROM dhi.io/dotnet:9-sdk AS development
+COPY . /src
+WORKDIR /src
+COPY --from=recipe-getter /recipeData .
+CMD dotnet run --no-launch-profile
