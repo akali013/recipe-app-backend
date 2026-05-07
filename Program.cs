@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: AllowSpecificOrigins,
             policy =>
             {
-                policy.WithOrigins(["http://localhost:8080", "http://localhost:4200"])
+                policy.WithOrigins(["http://localhost:30001", "http://localhost:8080", "http://localhost:4200"])
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -22,17 +22,17 @@ builder.Services.AddCors(options =>
     );
 });
 
-// Docker connection string setup with secrets
-var password = File.ReadAllText("/run/secrets/SA_PASSWORD").Trim();
-var dockerConnectionString = $"Server=db;Database=RecipesDB;User Id=sa;Password={password};MultipleActiveResultSets=true;TrustServerCertificate=true;";
-
-// Connect to the SQL Server database under RecipeContext using the connection string in appsettings.json (or Docker secrets)
+// Kubernetes connection string setup with secrets
+var password = File.ReadAllText("/db-password-secret/SA_PASSWORD").Trim();
+var kubernetesConnectionString = $"Server=tcp:recipe-app-backend-db,1433;Database=RecipesDB;User Id=sa;Password={password};MultipleActiveResultSets=True;TrustServerCertificate=True;";
+Console.WriteLine(kubernetesConnectionString);
+// Connect to the SQL Server database under RecipeContext using the connection string
 builder.Services.AddDbContext<RecipeContext>(options =>
     options.UseSqlServer(
-        dockerConnectionString ?? throw new InvalidOperationException("Connection string 'RecipeContext' not found."),
+        kubernetesConnectionString ?? throw new InvalidOperationException("Connection string 'RecipeContext' not found."),
         sql => sql.EnableRetryOnFailure(
             maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
+            maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null
         )
     )

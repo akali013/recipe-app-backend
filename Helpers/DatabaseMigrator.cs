@@ -12,8 +12,8 @@ namespace recipe_app_backend.Helpers
         // Wait for the SQL Server db and create the RecipesDB database
         public static async Task MigrateDatabaseAsync(IServiceProvider services, ILogger logger)
         {
-            const int maxRetries = 10;
-            const int delaySeconds = 5;
+            const int maxRetries = 20;
+            const int delaySeconds = 30;
 
             // Try connecting to the database 10 times with a 5 second delay between each try
             for (int retry = 1; retry <= maxRetries; retry++)

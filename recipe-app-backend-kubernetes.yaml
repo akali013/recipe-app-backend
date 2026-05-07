@@ -1,0 +1,264 @@
+# Source: https://docs.docker.com/guides/dotnet/deploy/
+
+# Secret to store the SA_PASSWORD for the SQL Server container
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-password-secret
+data:
+  SA_PASSWORD: QVUoKlVSKUEyOHUtaDkxYWppcCtaTWFpQHNFUXw=
+---
+# hostPath PV for SQL Server recipe data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: recipe-data-volume
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/recipe-data
+    type: DirectoryOrCreate         # Create directory before starting the SQL Server container
+  storageClassName: ""
+---
+# PVC to bind to the recipe data PV
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: recipe-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  volumeName: recipe-data-volume
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ""
+---
+# StorageClass for .NET Local PVs and PVCs
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner # indicates that this StorageClass does not support automatic provisioning
+volumeBindingMode: WaitForFirstConsumer
+---
+# Local PV for storing recipe images for the .NET backend to store
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: recipe-images-volume
+  labels:
+    app-pv: recipe-images
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /var/lib/recipe-images    # Use the directory created by the .NET deployment's init container
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - "docker-desktop"
+---
+# PVC to bind to the recipe images PV
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: recipe-images-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: local-storage
+  selector:
+    matchLabels:
+      app-pv: recipe-images
+---
+# .NET deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recipe-app-backend-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recipe-app-backend-server
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: recipe-app-backend-server
+    spec:
+      initContainers:
+        # Wait for SQL Server to start before starting the .NET backend container
+        - name: wait-for-db
+          image: busybox:1.28
+          command:
+            [
+              "sh",
+              "-c",
+              'until nc -z recipe-app-backend-db 1433; do echo "waiting for db"; sleep 2; done;',
+            ]
+        # Create the directory for the recipe images pv to be mounted in on the node via a hostpath volume
+        # and add write permissions for .NET
+        - name: init-recipe-images-dir
+          image: busybox:1.28
+          command: ["sh", "-c", "mkdir -p /dotnet-content/recipe-images && chown -R 10001:10001 /dotnet-content/recipe-images && chmod -R 777 /dotnet-content/recipe-images"]
+          volumeMounts:
+              - name: content-var-lib
+                mountPath: /dotnet-content
+      containers:
+        # Make the backend available across any interfaces via 0.0.0.0 on port 5132
+        - env:
+            - name: ASPNETCORE_URLS
+              value: "http://0.0.0.0:5132"
+          image: akali013/recipe-app-backend:latest
+          name: recipe-app-backend-server-container
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5132
+              protocol: TCP
+          resources: {}
+          volumeMounts:
+            - name: db-password-secret-volume
+              mountPath: /db-password-secret
+              readOnly: true
+            - name: recipe-images-volume
+              mountPath: /app/wwwroot/recipeImages
+      # Load in volumes representing the /var/lib directory of the node, db password secret, and recipe image data
+      volumes:
+        - name: content-var-lib
+          hostPath:
+            path: /var/lib
+            type: Directory
+        - name: db-password-secret-volume
+          secret:
+            secretName: db-password-secret
+        - name: recipe-images-volume
+          persistentVolumeClaim:
+            claimName: recipe-images-pvc
+      restartPolicy: Always
+status: {}
+---
+# SQL Server StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: recipe-app-backend-db
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: recipe-app-backend-db
+  serviceName: "recipe-app-backend-db"
+  minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        app: recipe-app-backend-db
+    spec:
+      terminationGracePeriodSeconds: 20
+      initContainers:
+      # Set write permissions for SQL Server in the /var/opt/mssql directory (/var/lib/recipe-data node directory) where the recipe data PV is mounted in
+      - name: init-mssql-volume
+        image: busybox:1.28
+        command:
+          - sh
+          - -c
+          - |
+            mkdir -p /var/opt/mssql
+            chown -R 10001:10001 /var/opt/mssql
+            chmod -R 770 /var/opt/mssql
+        volumeMounts:
+          - name: recipe-data-volume
+            mountPath: /var/opt/mssql
+      containers:
+        - env:
+            - name: ACCEPT_EULA
+              value: "bruh"
+            - name: MSSQL_SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-password-secret
+                  key: SA_PASSWORD
+            - name: MSSQL_PID
+              value: "Express"
+            - name: MSSQL_DB
+              value: "RecipesDB"
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          name: recipe-app-backend-db-container
+          # Mount the hostPath recipe data PV at the SQL Server data directory (/var/opt/mssql)
+          volumeMounts:
+            - name: recipe-data-volume
+              mountPath: /var/opt/mssql
+          ports:
+            - containerPort: 1433
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 1433
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+          resources: {}
+      # Load in the hostPath recipe data PV
+      volumes:
+        - name: recipe-data-volume
+          persistentVolumeClaim:
+            claimName: recipe-data-pvc
+      restartPolicy: Always
+status: {}
+---
+# .NET NodePort Service that exposes the backend to external browsers on port 30002
+apiVersion: v1
+kind: Service
+metadata:
+  name: recipe-app-backend-server
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - name: "5132"
+      port: 5132
+      targetPort: 5132
+      nodePort: 30002
+  selector:
+    app: recipe-app-backend-server
+status:
+  loadBalancer: {}
+---
+# SQL Server headless Service available on pod port 1433
+apiVersion: v1
+kind: Service
+metadata:
+  name: recipe-app-backend-db
+  namespace: default
+spec:
+  ports:
+    - name: "1433"
+      port: 1433
+      targetPort: 1433
+      protocol: TCP
+  clusterIP: None
+  selector:
+    app: recipe-app-backend-db
+status:
+  loadBalancer: {}
