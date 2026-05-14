@@ -38,6 +38,8 @@ service/recipe-app-backend-server created
 Warning: spec.SessionAffinity is ignored for headless services
 service/recipe-app-backend-db created`.
 5. The backend is now available for requests at localhost:30002 from the frontend.
+> [!NOTE]
+> It will take some time for the SQL Server container to run. The backend is fully operational once the recipe-app-backend container has `Now listening on: http://0.0.0.0:5132⁠` in its logs.
 
 ## Credits
 - [The MealDB API](https://www.themealdb.com/api.php)
